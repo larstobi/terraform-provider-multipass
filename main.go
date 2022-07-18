@@ -1,15 +1,20 @@
 package main
 
 import (
-    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-    "github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+    "context"
+    "github.com/hashicorp/terraform-plugin-framework/providerserver"
+    "log"
     "terraform-provider-multipass/multipass"
 )
 
 func main() {
-    plugin.Serve(&plugin.ServeOpts{
-        ProviderFunc: func() *schema.Provider {
-            return multipass.Provider()
-        },
-    })
+    opts := providerserver.ServeOpts{
+        Address: "registry.terraform.io/larstobi/multipass",
+    }
+
+    err := providerserver.Serve(context.Background(), multipass.New, opts)
+
+    if err != nil {
+        log.Fatal(err.Error())
+    }
 }
