@@ -16,6 +16,7 @@ type resourceInstanceType struct{}
 func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
     return tfsdk.Schema{
         Description: "Multipass instance resource.",
+        Version:     1,
         Attributes: map[string]tfsdk.Attribute{
             "name": {
                 Description: "Name for the instance. If it is 'primary' " +
