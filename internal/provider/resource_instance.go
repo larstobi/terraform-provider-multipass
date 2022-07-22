@@ -1,7 +1,8 @@
-package multipass
+package provider
 
 import (
     "context"
+
     "github.com/hashicorp/terraform-plugin-framework/diag"
     "github.com/hashicorp/terraform-plugin-framework/tfsdk"
     "github.com/hashicorp/terraform-plugin-framework/types"
@@ -10,15 +11,19 @@ import (
     "github.com/larstobi/go-multipass/multipass"
 )
 
-type resourceInstanceType struct{}
+var _ tfsdk.ResourceType = instanceResourceType{}
+var _ tfsdk.Resource = instanceResource{}
+var _ tfsdk.ResourceWithImportState = instanceResource{}
 
-// Instance Resource schema
-func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
+type instanceResourceType struct{}
+
+func (r instanceResourceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
     return tfsdk.Schema{
-        Description: "Multipass instance resource.",
+        MarkdownDescription: "Multipass instance resource.",
+        Version:             0,
         Attributes: map[string]tfsdk.Attribute{
             "name": {
-                Description: "Name for the instance. If it is 'primary' " +
+                MarkdownDescription: "Name for the instance. If it is 'primary' " +
                     "(the configured primary instance name), the user's " +
                     "home directory is mounted inside the newly launched " +
                     "instance, in 'Home'.",
@@ -29,7 +34,7 @@ func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
                 },
             },
             "image": {
-                Description: "Optional image to launch. If omitted, then " +
+                MarkdownDescription: "Optional image to launch. If omitted, then " +
                     "the default Ubuntu LTS will be used. <remote> can be " +
                     "either ‘release’ or ‘daily‘. If <remote> is " +
                     "omitted, ‘release’ will be used. <image> can be a " +
@@ -43,15 +48,15 @@ func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
                 },
             },
             "cpus": {
-                Description: "Number of CPUs to allocate. Minimum: 1, default: 1.",
-                Type:        types.NumberType,
-                Optional:    true,
+                MarkdownDescription: "Number of CPUs to allocate. Minimum: 1, default: 1.",
+                Type:                types.NumberType,
+                Optional:            true,
                 PlanModifiers: []tfsdk.AttributePlanModifier{
                     tfsdk.RequiresReplace(),
                 },
             },
             "memory": {
-                Description: "Amount of memory to allocate. Positive integers, " +
+                MarkdownDescription: "Amount of memory to allocate. Positive integers, " +
                     "in bytes, or with K, M, G suffix. Minimum: 128M, default: 1G.",
                 Type:     types.StringType,
                 Optional: true,
@@ -60,7 +65,7 @@ func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
                 },
             },
             "disk": {
-                Description: "Disk space to allocate. Positive integers, in bytes, " +
+                MarkdownDescription: "Disk space to allocate. Positive integers, in bytes, " +
                     "or with K, M, G suffix. Minimum: 512M, default: 5G.",
                 Type:     types.StringType,
                 Optional: true,
@@ -69,9 +74,9 @@ func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
                 },
             },
             "cloudinit_file": {
-                Description: "Path to a user-data cloud-init configuration.",
-                Type:        types.StringType,
-                Optional:    true,
+                MarkdownDescription: "Path to a user-data cloud-init configuration.",
+                Type:                types.StringType,
+                Optional:            true,
                 PlanModifiers: []tfsdk.AttributePlanModifier{
                     tfsdk.RequiresReplace(),
                 },
@@ -80,11 +85,12 @@ func (r resourceInstanceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
     }, nil
 }
 
-// New resource instance
-func (r resourceInstanceType) NewResource(_ context.Context, p tfsdk.Provider) (tfsdk.Resource, diag.Diagnostics) {
-    return resourceInstance{
-        p: *(p.(*provider)),
-    }, nil
+func (t instanceResourceType) NewResource(ctx context.Context, in tfsdk.Provider) (tfsdk.Resource, diag.Diagnostics) {
+    provider, diags := convertProviderType(in)
+
+    return instanceResource{
+        provider: provider,
+    }, diags
 }
 
 type Instance struct {
@@ -96,12 +102,11 @@ type Instance struct {
     CloudInitFile types.String `tfsdk:"cloudinit_file"`
 }
 
-type resourceInstance struct {
-    p provider
+type instanceResource struct {
+    provider provider
 }
 
-// Create a new resource
-func (r resourceInstance) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
+func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
 
     // Retrieve values from plan
     var plan Instance
@@ -111,7 +116,7 @@ func (r resourceInstance) Create(ctx context.Context, req tfsdk.CreateResourceRe
         return
     }
 
-    tflog.Info(ctx, "Multipass resourceInstance", map[string]interface{}{
+    tflog.Info(ctx, "Multipass instanceResource", map[string]interface{}{
         "name": plan.Name.String(),
     })
 
@@ -139,13 +144,13 @@ func (r resourceInstance) Create(ctx context.Context, req tfsdk.CreateResourceRe
     }
 }
 
-func (r resourceInstance) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
+func (r instanceResource) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
 }
 
-func (r resourceInstance) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
+func (r instanceResource) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
 }
 
-func (r resourceInstance) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
+func (r instanceResource) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
 
     var state Instance
     diags := req.State.Get(ctx, &state)
@@ -170,7 +175,7 @@ func (r resourceInstance) Delete(ctx context.Context, req tfsdk.DeleteResourceRe
 }
 
 // Import resource
-func (r resourceInstance) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
+func (r instanceResource) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
     // Save the import identifier in the id attribute
     tfsdk.ResourceImportStatePassthroughID(ctx, tftypes.NewAttributePath().WithAttributeName("id"), req, resp)
 }
