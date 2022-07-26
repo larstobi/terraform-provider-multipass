@@ -3,10 +3,10 @@ module terraform-provider-multipass
 go 1.18
 
 require (
-	github.com/hashicorp/terraform-plugin-framework v0.9.0
-	github.com/hashicorp/terraform-plugin-go v0.11.0
-	github.com/hashicorp/terraform-plugin-log v0.5.0
-	github.com/larstobi/go-multipass v1.0.8
+	github.com/hashicorp/terraform-plugin-framework v0.10.0
+	github.com/hashicorp/terraform-plugin-go v0.12.0
+	github.com/hashicorp/terraform-plugin-log v0.7.0
+	github.com/larstobi/go-multipass v1.1.0
 )
 
 require (
