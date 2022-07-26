@@ -4,9 +4,9 @@ import (
     "context"
 
     "github.com/hashicorp/terraform-plugin-framework/diag"
+    "github.com/hashicorp/terraform-plugin-framework/path"
     "github.com/hashicorp/terraform-plugin-framework/tfsdk"
     "github.com/hashicorp/terraform-plugin-framework/types"
-    "github.com/hashicorp/terraform-plugin-go/tftypes"
     "github.com/hashicorp/terraform-plugin-log/tflog"
     "github.com/larstobi/go-multipass/multipass"
 )
@@ -120,7 +120,7 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
         "name": plan.Name.String(),
     })
 
-    _, err := multipass.Launch(&multipass.LaunchReq{
+    _, err := multipass.LaunchV2(&multipass.LaunchReqV2{
         Name:          plan.Name.Value,
         Image:         plan.Image.Value,
         CPUS:          plan.CPUS.Value.String(),
@@ -177,5 +177,5 @@ func (r instanceResource) Delete(ctx context.Context, req tfsdk.DeleteResourceRe
 // Import resource
 func (r instanceResource) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
     // Save the import identifier in the id attribute
-    tfsdk.ResourceImportStatePassthroughID(ctx, tftypes.NewAttributePath().WithAttributeName("id"), req, resp)
+    tfsdk.ResourceImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
