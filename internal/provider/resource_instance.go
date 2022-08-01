@@ -57,7 +57,7 @@ func (r instanceResourceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
             },
             "memory": {
                 MarkdownDescription: "Amount of memory to allocate. Positive integers, " +
-                    "in bytes, or with K, M, G suffix. Minimum: 128M, default: 1G.",
+                    "in KiB, MiB, GiB or TiB suffix. Minimum: 128MiB, default: 1GiB.",
                 Type:     types.StringType,
                 Optional: true,
                 PlanModifiers: []tfsdk.AttributePlanModifier{
@@ -65,8 +65,8 @@ func (r instanceResourceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
                 },
             },
             "disk": {
-                MarkdownDescription: "Disk space to allocate. Positive integers, in bytes, " +
-                    "or with K, M, G suffix. Minimum: 512M, default: 5G.",
+                MarkdownDescription: "Disk space to allocate. Positive integers, " +
+                    "in KiB, MiB, GiB or TiB suffix. Minimum: 512MiB, default: 5GiB.",
                 Type:     types.StringType,
                 Optional: true,
                 PlanModifiers: []tfsdk.AttributePlanModifier{
@@ -107,7 +107,6 @@ type instanceResource struct {
 }
 
 func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
-
     // Retrieve values from plan
     var plan Instance
     diags := req.Plan.Get(ctx, &plan)
@@ -145,13 +144,38 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
 }
 
 func (r instanceResource) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
+    // Get current state
+    var state Instance
+    diags := req.State.Get(ctx, &state)
+    resp.Diagnostics.Append(diags...)
+    if resp.Diagnostics.HasError() {
+        return
+    }
+
+    result, err := QueryInstance(state)
+    if err != nil {
+        resp.Diagnostics.AddError(
+            "Error from multipass",
+            "Could not query instance: "+err.Error(),
+        )
+        return
+    }
+
+    // Set state
+    diags = resp.State.Set(ctx, result)
+    resp.Diagnostics.Append(diags...)
+    if resp.Diagnostics.HasError() {
+        return
+    }
 }
 
 func (r instanceResource) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
+    // multipass stop instance
+    // multipass set local.instance.cpus etc
+    // multipass start instance
 }
 
 func (r instanceResource) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
-
     var state Instance
     diags := req.State.Get(ctx, &state)
     resp.Diagnostics.Append(diags...)
