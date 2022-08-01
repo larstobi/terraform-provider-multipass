@@ -3,10 +3,11 @@ module terraform-provider-multipass
 go 1.18
 
 require (
+	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	github.com/hashicorp/terraform-plugin-framework v0.10.0
 	github.com/hashicorp/terraform-plugin-go v0.12.0
 	github.com/hashicorp/terraform-plugin-log v0.7.0
-	github.com/larstobi/go-multipass v1.1.0
+	github.com/larstobi/go-multipass v1.2.0
 )
 
 require (
