@@ -119,10 +119,17 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
         "name": plan.Name.String(),
     })
 
+    var cpus string
+    if plan.CPUS.Null {
+        cpus = ""
+    } else {
+        cpus = plan.CPUS.Value.String()
+    }
+
     _, err := multipass.LaunchV2(&multipass.LaunchReqV2{
         Name:          plan.Name.Value,
         Image:         plan.Image.Value,
-        CPUS:          plan.CPUS.Value.String(),
+        CPUS:          cpus,
         Memory:        plan.Memory.Value,
         Disk:          plan.Disk.Value,
         CloudInitFile: plan.CloudInitFile.Value,
