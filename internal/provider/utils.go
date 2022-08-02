@@ -18,32 +18,39 @@ func QueryInstance(state Instance) (*Instance, error) {
 	}
 
 	// Check CPUS
-	cpus := new(big.Float)
-	cpus.SetString(out.CPUS)
-
-	// Check Memory
-	if state.Memory.Null {
-		state.Memory = types.String{Value: "0MiB"}
+	current_cpus := state.CPUS
+	// If CPUS is not specified, then ignore changes
+	if !state.CPUS.Null {
+		cpus := new(big.Float)
+		cpus.SetString(out.CPUS)
+		if cpus != state.CPUS.Value {
+			current_cpus = types.Number{Value: cpus}
+		}
 	}
 
+	// Check Memory
 	current_memory := state.Memory
-	if equal, err := CompareDataSizes(out.Memory, state.Memory.Value); err != nil {
-		return nil, errors.New("Error comparing memory size: " + err.Error())
-	} else {
-		if !*equal {
-			current_memory = types.String{Value: RemoveZeroDecimalAndSpaces(out.Memory)}
+	// If Memory is not specified, then ignore changes
+	if !state.Memory.Null {
+		if equal, err := CompareDataSizes(out.Memory, state.Memory.Value); err != nil {
+			return nil, errors.New("Error comparing memory size: " + err.Error())
+		} else {
+			if !*equal {
+				current_memory = types.String{Value: RemoveZeroDecimalAndSpaces(out.Memory)}
+			}
 		}
 	}
 
 	// Check Disk
-	var current_disk types.String
-	if equal, err := CompareDataSizes(out.Disk, state.Disk.Value); err != nil {
-		return nil, errors.New("Error comparing disk size: " + err.Error())
-	} else {
-		if *equal {
-			current_disk = state.Disk
+	current_disk := state.Disk
+	// If Disk is not specified, then ignore changes
+	if !state.Disk.Null {
+		if equal, err := CompareDataSizes(out.Disk, state.Disk.Value); err != nil {
+			return nil, errors.New("Error comparing disk size: " + err.Error())
 		} else {
-			current_disk = types.String{Value: RemoveZeroDecimalAndSpaces(out.Disk)}
+			if !*equal {
+				current_disk = types.String{Value: RemoveZeroDecimalAndSpaces(out.Disk)}
+			}
 		}
 	}
 
@@ -51,7 +58,7 @@ func QueryInstance(state Instance) (*Instance, error) {
 	var result = Instance{
 		Name:          state.Name,
 		Image:         state.Image,
-		CPUS:          types.Number{Value: cpus},
+		CPUS:          current_cpus,
 		Memory:        current_memory,
 		Disk:          current_disk,
 		CloudInitFile: state.CloudInitFile,
