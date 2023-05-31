@@ -159,6 +159,15 @@ func (r instanceResource) Read(ctx context.Context, req tfsdk.ReadResourceReques
         return
     }
 
+    instanceInfo, infoErr := multipass.Info(&multipass.InfoRequest{Name: state.Name.Value})
+    if instanceInfo == nil || infoErr != nil {
+        tflog.Warn(ctx, "Multipass instance not found, removing from state.", map[string]interface{}{
+            "name": state.Name.Value,
+        })
+        resp.State.RemoveResource(ctx)
+        return
+    }
+
     result, err := QueryInstance(state)
     if err != nil {
         resp.Diagnostics.AddError(
