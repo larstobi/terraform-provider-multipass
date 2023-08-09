@@ -1,55 +1,54 @@
-Example of the use of The Terraform Provider for Multipass Hypervisor.
-------------------------------------------------------------------------------------------
- Url - https://registry.terraform.io/providers/larstobi/multipass/1.4.2
- By - Lars Tobias Skjong-Børsting
+# Example of Using the Terraform Provider for Multipass Hypervisor
 
- Multipass Hypervisor created by Cononical [Ubuntu] 
- Url - https://multipass.run/
+**URL:** [Terraform Provider for Multipass Hypervisor](https://registry.terraform.io/providers/larstobi/multipass/1.4.2)  
+**Author:** Lars Tobias Skjong-Børsting
 
- Terraform example provided by Robert Weaver
+Multipass Hypervisor created by Canonical [Ubuntu]  
+**URL:** [Multipass](https://multipass.run/)
 
-What is this Example
----------------------
+Terraform example provided by Robert Weaver
 
-This Terraform Module will create 2 example VM's within the multipass hypervisor
-And will use the cloudinit to install the below package on each of the two servers apon bootup
-As well as ensuringin the server is updated, and SSH keys are installed. 
+## What is this Example
 
-Packages to be installed. 
----------------------------
+This Terraform module will create 2 example VMs within the Multipass hypervisor and will use cloud-init to install the following packages on each of the two servers upon bootup, as well as ensuring that the server is updated and SSH keys are installed.
+
+Packages to be installed:
 - Apache2
 - tmux
-- nmon 
+- nmon
 
-Terraform Module
------------------------
+## Terraform Module Structure
 
-── README.md                       < This Readme>
-├── main.tf                             < main calling module>  
-├── multipass_module             < This is the main module folder>
-│   ├── main.tf                  < Main terraform Module >
-│   ├── provider.tf              < Link to provider in the main root folder>
-│   └── vars.tf                  < Variables passed to the main multipass module> 
-├── provider.tf                  < Main provider for multipass version 1.4.2>
-├── user_data.cfg                < Bootstrap installation of packages , ssh keys and upgrade of VM>
-└── variables.tf                 < Variables used by the module , and default settings>
+| File/Folder                 | Description                                     |
+|-----------------------------|-------------------------------------------------|
+| README.md                   | This README                                    |
+| main.tf                      | Main calling module                            |
+| multipass_module/           | Main module folder                             |
+| multipass_module/main.tf     | Main Terraform module                          |
+| multipass_module/provider.tf | Link to the provider in the main root folder   |
+| multipass_module/vars.tf     | Variables passed to the main Multipass module  |
+| provider.tf                 | Main provider for Multipass version 1.4.2     |
+| user_data.cfg               | Bootstrap installation of packages, SSH keys, and VM upgrade |
+| variables.tf                | Variables used by the module and default settings |
 
-Module Configuration
-----------------------
+
+## Module Configuration
+
+```hcl
 resource "multipass_instance" "multipass_vm" {
-    count           = var.instance_count
-    cloudinit_file  = "${path.module}/user_data.cfg"
-    name            = vm.name
-    cpus            = var.cpus
-    memory          = var.memory
-    disk            = var.disks
-    image           = var.image_name
-}
+    count          = var.instance_count
+    cloudinit_file = "${path.module}/user_data.cfg"
+    name           = var.vm_name
+    cpus           = var.cpus
+    memory         = var.memory
+    disk           = var.disks
+    image          = var.image_name
+} ```
 
-## running the terraform plan
+## Running the Terraform Plan
 
-- cd into the main root directory
-- terraform init
-- terraform validate
-- terraform plan
-- terraform apply  < answer yes to proceed >
+    Change directory to the main root directory.
+    Run terraform init.
+    Run terraform validate.
+    Run terraform plan.
+    Run terraform apply (answer yes to proceed).
