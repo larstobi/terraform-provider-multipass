@@ -36,7 +36,7 @@ Terraform Module
 
 Module Configuration
 ----------------------
-`resource "multipass_instance" "multipass_vm" {
+resource "multipass_instance" "multipass_vm" {
     count           = var.instance_count
     cloudinit_file  = "${path.module}/user_data.cfg"
     name            = vm.name
@@ -45,7 +45,7 @@ Module Configuration
     disk            = var.disks
     image           = var.image_name
 }
-`
+
 ## running the terraform plan
 
 - cd into the main root directory
