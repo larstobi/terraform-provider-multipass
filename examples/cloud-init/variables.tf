@@ -1,36 +1,37 @@
 variable "user_data" {
   description = "cloudinit_file that contains bootstrap provision commands"
-  type    = string
-  default = "./user_data"
+  type        = string
+  default     = "./user_data"
 }
+
 variable "name" {
   description = "Name of the VM your creating"
-  type    = string
-  default = "dev"
+  type        = string
+  default     = "dev"
 }
 
 variable "image_name" {
   description = "ubuntu image name default jammy Lts"
-  type    = string
-  default = "jammy"
+  type        = string
+  default     = "jammy"
 }
 
 variable "cpus" {
   description = "virtual cpu count"
-  type    = number
-  default = 4
+  type        = number
+  default     = 4
 }
 
 variable "memory" {
   description = "virtual Vm memory allocation"
-  type    = string
-  default = "4G"
+  type        = string
+  default     = "4G"
 }
 
 variable "disks" {
   description = "Thin provisioned disk size"
-    type    = string
-    default = "20G"
+  type        = string
+  default     = "20G"
 }
 
 variable "instance_count" {
