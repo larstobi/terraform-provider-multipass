@@ -81,6 +81,30 @@ func (r instanceResourceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
 					tfsdk.RequiresReplace(),
 				},
 			},
+			"network": {
+				MarkdownDescription: "Network interfaces to add. Each entry can be a network name or " +
+					"a specification in 'key=value,key=value' format. " +
+					"Keys: name (required), mode (auto|manual), mac (hardware address). " +
+					"Example: 'name=bridge0,mode=manual' or just 'bridge0'.",
+				Type:     types.ListType{ElemType: types.StringType},
+				Optional: true,
+				PlanModifiers: []tfsdk.AttributePlanModifier{
+					tfsdk.RequiresReplace(),
+				},
+			},
+			"bridged": {
+				MarkdownDescription: "Add a bridged network interface. This is a shortcut for adding '--network bridged'.",
+				Type:                types.BoolType,
+				Optional:            true,
+				PlanModifiers: []tfsdk.AttributePlanModifier{
+					tfsdk.RequiresReplace(),
+				},
+			},
+			"ipv4": {
+				MarkdownDescription: "The IPv4 address of the instance.",
+				Type:                types.StringType,
+				Computed:            true,
+			},
 		},
 	}, nil
 }
@@ -100,6 +124,9 @@ type Instance struct {
 	Memory        types.String `tfsdk:"memory"`
 	Disk          types.String `tfsdk:"disk"`
 	CloudInitFile types.String `tfsdk:"cloudinit_file"`
+	Network       types.List   `tfsdk:"network"`
+	Bridged       types.Bool   `tfsdk:"bridged"`
+	IPv4          types.String `tfsdk:"ipv4"`
 }
 
 type instanceResource struct {
@@ -126,6 +153,17 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
 		cpus = plan.CPUS.Value.String()
 	}
 
+	// Extract network specifications
+	var networks []string
+	if !plan.Network.Null && !plan.Network.Unknown {
+		plan.Network.ElementsAs(ctx, &networks, false)
+	}
+
+	var bridged bool
+	if !plan.Bridged.Null {
+		bridged = plan.Bridged.Value
+	}
+
 	_, err := multipass.LaunchV2(&multipass.LaunchReqV2{
 		Name:          plan.Name.Value,
 		Image:         plan.Image.Value,
@@ -133,6 +171,8 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
 		Memory:        plan.Memory.Value,
 		Disk:          plan.Disk.Value,
 		CloudInitFile: plan.CloudInitFile.Value,
+		Network:       networks,
+		Bridged:       bridged,
 	})
 
 	if err != nil {
@@ -141,6 +181,12 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
 			"Could not create instance, unexpected error: "+err.Error(),
 		)
 		return
+	}
+
+	// Fetch instance info to get IP address
+	instanceInfo, infoErr := multipass.Info(&multipass.InfoRequest{Name: plan.Name.Value})
+	if infoErr == nil && instanceInfo != nil {
+		plan.IPv4 = types.String{Value: instanceInfo.IP}
 	}
 
 	diags = resp.State.Set(ctx, plan)

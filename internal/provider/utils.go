@@ -54,6 +54,13 @@ func QueryInstance(state Instance) (*Instance, error) {
 		}
 	}
 
+	// Fetch instance info to get IP address
+	instanceInfo, infoErr := multipass.Info(&multipass.InfoRequest{Name: state.Name.Value})
+	ipv4 := state.IPv4
+	if infoErr == nil && instanceInfo != nil {
+		ipv4 = types.String{Value: instanceInfo.IP}
+	}
+
 	// Generate resource state struct
 	var result = Instance{
 		Name:          state.Name,
@@ -62,6 +69,9 @@ func QueryInstance(state Instance) (*Instance, error) {
 		Memory:        current_memory,
 		Disk:          current_disk,
 		CloudInitFile: state.CloudInitFile,
+		Network:       state.Network,
+		Bridged:       state.Bridged,
+		IPv4:          ipv4,
 	}
 
 	return &result, nil
