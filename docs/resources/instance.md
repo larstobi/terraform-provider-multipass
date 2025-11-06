@@ -21,11 +21,13 @@ Multipass instance resource.
 
 ### Optional
 
+- `bridged` (Boolean) Add a bridged network interface. This is a shortcut for adding '--network bridged'.
 - `cloudinit_file` (String) Path to a user-data cloud-init configuration.
 - `cpus` (Number) Number of CPUs to allocate. Minimum: 1, default: 1.
 - `disk` (String) Disk space to allocate. Positive integers, in KiB, MiB, GiB or TiB suffix. Minimum: 512MiB, default: 5GiB.
-- `image` (String) Optional image to launch. If omitted, then the default Ubuntu LTS will be used. <remote> can be either ‘release’ or ‘daily‘. If <remote> is omitted, ‘release’ will be used. <image> can be a partial image hash or an Ubuntu release version, codename or alias. <url> is a custom image URL that is in http://, https://, or file:// format.
+- `image` (String) Optional image to launch. If omitted, then the default Ubuntu LTS will be used. <remote> can be either 'release' or 'daily'. If <remote> is omitted, 'release' will be used. <image> can be a partial image hash or an Ubuntu release version, codename or alias. <url> is a custom image URL that is in http://, https://, or file:// format.
 - `memory` (String) Amount of memory to allocate. Positive integers, in KiB, MiB, GiB or TiB suffix. Minimum: 128MiB, default: 1GiB.
+- `network` (List of String) Network interfaces to add. Each entry can be a network name or a specification in 'key=value,key=value' format. Keys: name (required), mode (auto|manual), mac (hardware address). Example: 'name=bridge0,mode=manual' or just 'bridge0'.
 
 ### Read-Only
 

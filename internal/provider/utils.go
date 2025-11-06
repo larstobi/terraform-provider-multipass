@@ -69,6 +69,8 @@ func QueryInstance(state Instance) (*Instance, error) {
 		Memory:        current_memory,
 		Disk:          current_disk,
 		CloudInitFile: state.CloudInitFile,
+		Network:       state.Network,
+		Bridged:       state.Bridged,
 		IPv4:          ipv4,
 	}
 
