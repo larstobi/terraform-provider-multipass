@@ -27,4 +27,8 @@ Multipass instance resource.
 - `image` (String) Optional image to launch. If omitted, then the default Ubuntu LTS will be used. <remote> can be either ‘release’ or ‘daily‘. If <remote> is omitted, ‘release’ will be used. <image> can be a partial image hash or an Ubuntu release version, codename or alias. <url> is a custom image URL that is in http://, https://, or file:// format.
 - `memory` (String) Amount of memory to allocate. Positive integers, in KiB, MiB, GiB or TiB suffix. Minimum: 128MiB, default: 1GiB.
 
+### Read-Only
+
+- `ipv4` (String) The IPv4 address of the instance.
+
 
