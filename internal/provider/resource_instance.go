@@ -81,6 +81,11 @@ func (r instanceResourceType) GetSchema(_ context.Context) (tfsdk.Schema, diag.D
 					tfsdk.RequiresReplace(),
 				},
 			},
+			"ipv4": {
+				MarkdownDescription: "The IPv4 address of the instance.",
+				Type:                types.StringType,
+				Computed:            true,
+			},
 		},
 	}, nil
 }
@@ -100,6 +105,7 @@ type Instance struct {
 	Memory        types.String `tfsdk:"memory"`
 	Disk          types.String `tfsdk:"disk"`
 	CloudInitFile types.String `tfsdk:"cloudinit_file"`
+	IPv4          types.String `tfsdk:"ipv4"`
 }
 
 type instanceResource struct {
@@ -141,6 +147,12 @@ func (r instanceResource) Create(ctx context.Context, req tfsdk.CreateResourceRe
 			"Could not create instance, unexpected error: "+err.Error(),
 		)
 		return
+	}
+
+	// Fetch instance info to get IP address
+	instanceInfo, infoErr := multipass.Info(&multipass.InfoRequest{Name: plan.Name.Value})
+	if infoErr == nil && instanceInfo != nil {
+		plan.IPv4 = types.String{Value: instanceInfo.IP}
 	}
 
 	diags = resp.State.Set(ctx, plan)
