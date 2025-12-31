@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework v0.10.0
 	github.com/hashicorp/terraform-plugin-go v0.12.0
 	github.com/hashicorp/terraform-plugin-log v0.7.0
-	github.com/larstobi/go-multipass v1.2.1
+	github.com/larstobi/go-multipass v1.3.0
 )
 
 require (
